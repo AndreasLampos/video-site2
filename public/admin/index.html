@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="en" data-motion="reduced">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>Admin</title>
+  <meta name="theme-color" content="#0b0d11">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300..800&family=Hanken+Grotesk:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="/admin/admin.css">
+</head>
+<body class="admin">
+  <header class="a-top">
+    <div class="a-top__brand"><b aria-hidden="true"></b><span id="brand">Studio</span> <em>Admin</em></div>
+    <nav class="a-tabs" role="tablist" aria-label="Sections">
+      <button role="tab" id="tab-films" aria-controls="view-films" aria-selected="true">Films</button>
+      <button role="tab" id="tab-layout" aria-controls="view-layout" aria-selected="false">Layout</button>
+      <button role="tab" id="tab-text" aria-controls="view-text" aria-selected="false">Text</button>
+    </nav>
+    <a class="a-link" href="/" target="_blank" rel="noopener">View site</a>
+  </header>
+
+  <main class="wrap a-main">
+    <p class="a-loading" id="loading">Loading…</p>
+
+    <!-- FILMS -->
+    <section id="view-films" role="tabpanel" aria-labelledby="tab-films" hidden>
+      <div class="a-head">
+        <div>
+          <h1>Films</h1>
+          <p class="a-storage" id="storage"></p>
+        </div>
+        <button class="a-btn a-btn--primary" id="addFilm" type="button">Add a film</button>
+      </div>
+      <div class="a-films" id="films"></div>
+    </section>
+
+    <!-- LAYOUT -->
+    <section id="view-layout" role="tabpanel" aria-labelledby="tab-layout" hidden>
+      <div class="a-head">
+        <div><h1>Layout</h1><p class="a-sub">Choose which film appears where. Changes go live when you save.</p></div>
+      </div>
+      <form id="layoutForm" class="a-form">
+        <fieldset>
+          <legend>Featured clips</legend>
+          <div class="a-cols a-cols--2">
+            <label>Opening clip <small>Loops at the top of the page. Play reel opens this film with sound.</small><select id="pickHero"></select></label>
+            <label>About clip <small>Beside your About text</small><select id="pickAbout"></select></label>
+          </div>
+        </fieldset>
+        <fieldset>
+          <legend>Selected work</legend>
+          <p class="a-sub">Scrolling chapters, one film each, top to bottom. Each one shows the film's tagline and description.</p>
+          <ol class="a-order" id="storyList"></ol>
+          <label class="a-add">Add a chapter <select id="storyAdd"></select></label>
+        </fieldset>
+        <fieldset>
+          <legend>More films</legend>
+          <p class="a-sub">The gallery, in the order shown here.</p>
+          <ol class="a-order" id="galleryList"></ol>
+          <label class="a-add">Add to the gallery <select id="galleryAdd"></select></label>
+        </fieldset>
+        <div class="a-save"><button class="a-btn a-btn--primary" type="submit">Save and publish</button></div>
+      </form>
+    </section>
+
+    <!-- TEXT -->
+    <section id="view-text" role="tabpanel" aria-labelledby="tab-text" hidden>
+      <div class="a-head">
+        <div><h1>Text</h1><p class="a-sub">The words on your site. Changes go live when you save.</p></div>
+      </div>
+      <form id="textForm" class="a-form">
+        <fieldset>
+          <legend>Studio</legend>
+          <label>Studio name <input data-path="brand" maxlength="60" required></label>
+          <label>Browser tab title <small>Also shown in Google results</small><input data-path="metaTitle" maxlength="120" required></label>
+          <label>Search description <small>The short summary shown in Google results</small><textarea data-path="metaDescription" rows="2" maxlength="300"></textarea></label>
+        </fieldset>
+        <fieldset>
+          <legend>Opening screen</legend>
+          <div class="a-cols a-cols--2">
+            <label>Headline, line 1 <input data-path="hero.line1" maxlength="40" required></label>
+            <label>Headline, line 2 <input data-path="hero.line2" maxlength="40"></label>
+          </div>
+          <label>Intro sentence <textarea data-path="hero.sub" rows="2" maxlength="200"></textarea></label>
+        </fieldset>
+        <fieldset>
+          <legend>Film categories</legend>
+          <p class="a-sub">These become the filter buttons above the gallery.</p>
+          <div class="a-repeat" id="catList"></div>
+          <button class="a-btn" type="button" id="addCat">Add a category</button>
+        </fieldset>
+        <fieldset>
+          <legend>Gallery</legend>
+          <label>Gallery title <input data-path="gallery.title" maxlength="60" required></label>
+        </fieldset>
+        <fieldset>
+          <legend>Services</legend>
+          <label>Section title <input data-path="services.title" maxlength="60" required></label>
+          <div class="a-repeat" id="serviceList"></div>
+          <button class="a-btn" type="button" id="addService">Add a service</button>
+          <div class="a-cols a-cols--2">
+            <label>Note under the list <input data-path="services.note" maxlength="300"></label>
+            <label>Link to contact section <input data-path="services.noteLink" maxlength="80"></label>
+          </div>
+        </fieldset>
+        <fieldset>
+          <legend>About</legend>
+          <label>Heading <input data-path="about.heading" maxlength="80" required></label>
+          <label>Text <small>Leave a blank line between paragraphs</small><textarea id="aboutText" rows="8" maxlength="4000"></textarea></label>
+        </fieldset>
+        <fieldset>
+          <legend>Client quotes</legend>
+          <label>Section title <input data-path="clients.title" maxlength="60" required></label>
+          <p class="a-sub">Ask clients for permission before publishing their words. With no quotes, this section is hidden.</p>
+          <div class="a-repeat" id="quoteList"></div>
+          <button class="a-btn" type="button" id="addQuote">Add a quote</button>
+        </fieldset>
+        <fieldset>
+          <legend>Contact</legend>
+          <label>Heading <input data-path="contact.heading" maxlength="80" required></label>
+          <label>Sentence <textarea data-path="contact.lead" rows="2" maxlength="300"></textarea></label>
+          <div class="a-cols a-cols--2">
+            <label>Email <input data-path="contact.email" type="email" maxlength="200"></label>
+            <label>Phone <input data-path="contact.phone" type="tel" maxlength="40"></label>
+            <label>Instagram link <input data-path="contact.instagram" type="url" maxlength="500" placeholder="https://"></label>
+            <label>Vimeo link <input data-path="contact.vimeo" type="url" maxlength="500" placeholder="https://"></label>
+          </div>
+          <label>Contact form address <small>From your Formspree account. Without it, the form is hidden.</small><input data-path="contact.formAction" type="url" maxlength="500" placeholder="https://formspree.io/f/..."></label>
+        </fieldset>
+        <div class="a-save"><button class="a-btn a-btn--primary" type="submit">Save and publish</button></div>
+      </form>
+    </section>
+  </main>
+
+  <!-- ADD OR EDIT A FILM -->
+  <dialog class="a-dialog" id="filmDialog" aria-labelledby="filmDialogTitle">
+    <form id="filmForm" method="dialog" novalidate>
+      <div class="a-dialog__head">
+        <h2 id="filmDialogTitle">Add a film</h2>
+        <button class="a-link" type="button" id="filmCancel">Cancel</button>
+      </div>
+      <div class="a-dialog__body">
+        <div class="a-preview">
+          <label class="a-drop" id="drop">
+            <input type="file" id="fileInput" accept="video/*,.mov,.mp4,.m4v,.webm,.mkv">
+            <strong id="dropTitle">Choose a video</strong>
+            <span id="dropHint">or drag it here. MP4, MOV, WebM or MKV, compressed for the web automatically.</span>
+          </label>
+          <div class="a-previewBox" id="previewBox" hidden>
+            <p class="a-sub">How it looks in the gallery</p>
+            <div class="a-tileWrap" id="tileWrap">
+              <div class="tile" id="previewTile" data-shape="tall"><video id="previewVideo" muted loop playsinline></video><span id="previewTitle"></span></div>
+            </div>
+            <div id="fileControls" hidden>
+              <p class="a-fileinfo" id="fileInfo"></p>
+              <label>Cover image <small>Drag to the frame you want</small><input type="range" id="scrub" min="0" max="1000" value="0"></label>
+              <div class="a-cols a-cols--2">
+                <label>Start at (seconds) <input type="number" id="trimStart" min="0" step="0.1" placeholder="0"></label>
+                <label>End at (seconds) <input type="number" id="trimEnd" min="0" step="0.1" placeholder="End"></label>
+              </div>
+              <label class="a-check"><input type="checkbox" id="keepSound" checked> Keep the sound</label>
+            </div>
+          </div>
+        </div>
+        <div class="a-fields">
+          <label>Title <input id="fTitle" maxlength="120" required></label>
+          <label>Category <select id="fCategory"></select></label>
+          <label>Short name <small>For the list beside the chapters. Optional.</small><input id="fShort" maxlength="40"></label>
+          <label>Tagline <small>Above the title in a chapter. Example: Cafe, event film</small><input id="fMeta" maxlength="120"></label>
+          <label>Description <small>One or two sentences, shown in a chapter</small><textarea id="fDesc" rows="3" maxlength="600"></textarea></label>
+          <label>Full film link <small>Optional. A Vimeo or YouTube link. Clicking the film opens this, and the upload is used as the preview.</small><input id="fEmbed" type="url" maxlength="500" placeholder="https://vimeo.com/..."></label>
+          <div id="placement">
+            <p class="a-group">Where should it appear?</p>
+            <label class="a-check"><input type="checkbox" id="fGallery" checked> More films gallery</label>
+            <label class="a-check"><input type="checkbox" id="fStory"> Selected work chapter</label>
+          </div>
+        </div>
+      </div>
+      <div class="a-dialog__foot">
+        <div class="a-progress" id="progress" hidden>
+          <span id="progressLabel"></span>
+          <div class="a-progress__bar"><i id="progressBar"></i></div>
+        </div>
+        <p class="a-error" id="filmError" role="alert" hidden></p>
+        <button class="a-btn a-btn--primary" type="submit" id="filmSubmit">Publish film</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div class="a-toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+  <script type="module" src="/admin/admin.js"></script>
+</body>
+</html>

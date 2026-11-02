@@ -1,47 +1,79 @@
-# Video portfolio site, demo with real clips
+# Video portfolio site with admin page
 
-Plain HTML, CSS and JavaScript. No build step.
-Extract the zip first, then open `index.html` in Chrome. It needs an internet connection (fonts and animation libraries load from a CDN).
+The public site keeps its original design. Its films and text now come from a database, and the professional manages them from an admin page at `/admin/`.
 
-## The clips (folder `media/`)
-All six are vertical (9:16). On a phone they fill the screen. On a computer they sit in a frame over a blurred copy of themselves.
+It runs on Cloudflare:
 
-| Clip | Used in |
-|---|---|
-| `troufa-walking` | Hero, gallery |
-| `troufa-coffee-day` | Chapter 1, showreel button, gallery |
-| `amabile-cubes` | Chapter 2, gallery |
-| `amabile-lights` | Chapter 3, gallery |
-| `amabile-candles` | Chapter 4, gallery |
-| `amabile-boat` | Gallery, About section |
+| Piece | Service | Holds |
+|---|---|---|
+| Website and backend | Workers | `src/` and `public/` |
+| Film list and site text | D1 database | `migrations/` |
+| Video and image files | R2 storage | starter clips are in `seed/media/` |
+| Admin login | Zero Trust Access | an email code, no password |
 
-Each clip has three files: `name.mp4` (the video), `name.jpg` (a still shown while it loads, and on phones or with animations off) and `name-bg.jpg` (a tiny image used for the blurred background).
-The end cards with the Amabile logo were trimmed off, so loops don't flash the logo.
+## Try it on your computer
+You need Node.js. Nothing here goes online.
 
-## Adding or replacing a clip
-1. Make an mp4: 1080 x 1920, no sound, under about 8 MB:
-   `ffmpeg -i input.mov -t 14 -vf scale=1080:1920 -c:v libx264 -crf 27 -preset slow -an -movflags +faststart name.mp4`
-2. Make the stills: `ffmpeg -ss 2 -i name.mp4 -frames:v 1 -q:v 4 name.jpg` and `ffmpeg -i name.jpg -vf scale=270:480 -q:v 6 name-bg.jpg`
-3. Put the three files in `media/` and point to them in `index.html`.
+```
+npm install
+npm run setup:local   (only the first time)
+npm run dev
+```
 
-For horizontal (16:9) clips the frame in `styles.css` (`--frame-h`, `.hero__mediawrap`, `.story__media`) needs a wider aspect ratio. Ask and it can be switched per clip.
+- Site: http://localhost:8787/
+- Admin: http://localhost:8787/admin/ (no login is needed on your own computer)
 
-## Full films and the showreel
-Keep long films on Vimeo or YouTube and use the embed link:
-- Showreel button (`#playReel`): replace `data-src="..."` with `data-embed="https://player.vimeo.com/video/YOUR_ID?autoplay=1"`.
-- Any gallery tile: same change on that `<button class="tile">`.
+To start again from the starter content, stop the server, delete the `.wrangler` folder and run `npm run setup:local` again.
 
-## Text
-The project names and one-line descriptions were written from what the clips show. Correct them in `index.html` (search for `panel__meta`) and change `Studio Name`, the email, phone and social links in the Contact section.
+Run the automated checks with `npm test`.
 
-## Services and client quotes
-- "What I make" (`#services` in `index.html`) is a first draft. Check that every sentence matches what your friend really offers, including "Every project starts with a short call and a written quote".
-- "What clients say" (`#clients`) only has fill-in blocks. Replace each one with a real quote and the client's name and role, after asking their permission. Delete a block you don't need, or the whole section until you have quotes.
+## Going live
+1. Create a Cloudflare account, ideally in the professional's name, then log in: `npx wrangler login`
+2. Create the storage: `npx wrangler r2 bucket create video-site-media`
+3. Create the database: `npx wrangler d1 create video-site-db`, then paste the printed id into `database_id` in `wrangler.jsonc`
+4. Load the starter content: `npm run setup:remote`
+5. Publish: `npm run deploy`
+6. Add the domain in the Cloudflare dashboard, under the Worker's **Settings > Domains & Routes**
+
+**Then turn on the admin login.** The admin area stays locked for everyone until this is done:
+
+7. In the dashboard, open **Zero Trust > Access > Applications** and add a **Self-hosted** application with two paths on your domain: `admin*` and `api/admin/*`
+8. Add an **Allow** policy with the professional's email address. Use the **One-time PIN** login method.
+9. Copy the application's **Audience (AUD) tag** into `ACCESS_AUD` in `wrangler.jsonc`, and your team domain (like `yourteam.cloudflareaccess.com`) into `ACCESS_TEAM_DOMAIN`
+10. Publish again: `npm run deploy`
+
+Cloudflare's dashboard menus change from time to time, so the names above may differ slightly.
+
+## Before handing over
+These are still placeholders. All can be changed in the admin **Text** tab:
+- Studio name, "Hi, I'm Name", "X years"
+- Email, phone, Instagram and Vimeo links
+- Contact form address: the form won't send until this is a real [Formspree](https://formspree.io) address
+- Client quotes: use real ones, with permission, or remove them to hide the section
+- Services: check that the wording matches what he really offers
+
+## How uploads work
+- MP4, MOV, WebM and MKV files can be uploaded, as long as the browser can read the video inside. Everything is converted to MP4, the format every browser and phone plays.
+- The admin page compresses each video on the professional's computer before uploading: H.264 MP4, 1080p at most, about 4.5 Mbit/s. Files already small enough aren't re-encoded, so they lose no quality.
+- The still image and blurred background are created automatically from the frame chosen with the slider.
+- Vertical films sit in the frame over a blurred background. Horizontal films fill the screen, and span two columns in the gallery. On phones, every film fills the screen, so horizontal ones are cropped at the sides.
+- Each upload can run up to 20 minutes after trimming. For longer films, upload a short preview and add the Vimeo or YouTube link.
+
+**Browser:** use a current version of Chrome or Edge. Some camera formats, such as ProRes and sometimes iPhone HEVC on Windows, can't be read by the browser and need exporting to H.264 MP4 first. The page says so when this happens.
+
+## Video files in this project
+- `seed/media/`: web versions of the starter films, with sound, uploaded to storage by the setup step
+- `seed/originals/`: full-size camera originals. They're left out of git and the website, because they're too big for GitHub. Back them up separately.
+
+## Project layout
+- `src/index.js`: routes, media delivery and the admin API
+- `src/render.js`: builds the homepage
+- `src/validate.js`: checks everything sent from the admin page
+- `src/auth.js`: verifies the admin login
+- `public/`: `main.js`, `styles.css` and the admin page in `public/admin/`
+- `public/admin/vendor/`: Mediabunny, the video compression library (MPL-2.0). After updating the npm package, copy `dist/bundles/mediabunny.min.mjs` here again.
 
 ## Look
-- Colours are at the top of `styles.css`. Add `?accent=brass` to the address to preview the warm version.
-- Remove the viewfinder frame, timecode and grain by deleting the `.hud` and `.grain` divs in `index.html`.
+- Colours are at the top of `public/styles.css`. Add `?accent=brass` to the address to preview the warm version.
+- Remove the viewfinder frame, timecode and grain by deleting the `.hud` and `.grain` divs in `src/render.js`.
 - Visitors with "reduce motion" on in their system see still frames and soft fades, with a message offering to turn animations on.
-
-## Publish
-Drag the whole folder into Netlify, Cloudflare Pages or Vercel, then add the existing domain in the site's domain settings.
